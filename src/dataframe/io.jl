@@ -930,6 +930,44 @@ function readtable(pathname::AbstractString;
                      normalizenames = normalizenames)
 end
 
+# Macro to permit expressing a dataframe as a nonstandard string literal
+macro df_str(s, flags...)
+    header = true
+    separator = ','
+    makefactors = false
+    allowcomments = false
+    ignorepadding = true
+    skipblanks = true
+    if !isempty(flags)
+        for f in flags[1]
+            if f=='h'
+                header = false
+            elseif f=='t'
+                separator = '\t'
+            elseif f=='w'
+                separator = ' '
+            elseif f=='f'
+                makefactors = true
+            elseif f=='c'
+                allowcomments = true
+            elseif f=='p'
+                ignorepadding = false
+            elseif f=='b'
+                skipblanks = false
+            else
+                throw(ArgumentError("Unknown df_str flag: $f"))
+            end
+        end
+    end
+    readtable(IOBuffer(s),
+        header=header,
+        separator=separator,
+        makefactors=makefactors,
+        allowcomments=allowcomments,
+        ignorepadding=ignorepadding,
+        skipblanks=skipblanks)
+end
+
 function filldf!(df::DataFrame,
                  rows::Integer,
                  cols::Integer,
